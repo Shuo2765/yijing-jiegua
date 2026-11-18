@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#b03a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="易經解掛">
+    <meta name="description" content="六十四卦 · 三百八十四爻 · 完整解掛">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icon-180.png">
+    <link rel="icon" type="image/png" href="icon-180.png">
+    <title>易經數理占卜 - 六十四卦完整解掛</title>
+    <style>
+        :root { --ink: #2c3e50; --paper: #f9f7f2; --red: #b03a2e; --gold: #d4ac0d; }
+        body { font-family: "PingFang TC", "Noto Serif TC", "Microsoft JhengHei", "Heiti TC", serif; background-color: #e5e5e5; display: flex; justify-content: center; padding: 20px; padding-top: max(20px, env(safe-area-inset-top)); line-height: 1.6; margin: 0; }
+        .wrapper { background: var(--paper); max-width: 650px; width: 100%; padding: 40px; border: 1px solid #ccc; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; }
+        .wrapper::before { content: ""; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; border: 1px solid #dcd6c8; pointer-events: none; }
+
+        h1 { text-align: center; color: var(--ink); border-bottom: 2px solid var(--red); padding-bottom: 15px; letter-spacing: 8px; margin-top: 0; }
+        .subtitle { text-align: center; color: #888; font-size: 13px; margin: -8px 0 24px; letter-spacing: 2px; }
+        .mode-section { margin-bottom: 30px; padding: 20px; border: 1px solid #eee; background: rgba(255,255,255,0.5); border-radius: 8px; }
+        .mode-title { font-weight: bold; color: var(--red); margin-bottom: 15px; border-left: 4px solid var(--red); padding-left: 10px; }
+
+        .input-area { display: flex; gap: 10px; margin-bottom: 15px; }
+        .input-box { flex: 1; text-align: center; }
+        .input-box label { font-weight: bold; color: var(--ink); display: block; margin-bottom: 5px; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; background: #fff; text-align: center; border-radius: 4px; box-sizing: border-box; }
+
+        button { width: 100%; padding: 12px; color: white; border: none; font-size: 16px; cursor: pointer; letter-spacing: 2px; transition: 0.3s; font-weight: bold; border-radius: 4px; }
+        .btn-m1 { background: var(--ink); }
+        .btn-m2 { background: var(--red); }
+        .btn-m3 { background: #546e7a; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        #output { margin-top: 30px; display: none; }
+        .result-card { border: 2px solid var(--ink); padding: 25px; background: white; }
+        .gua-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--ink); padding-bottom: 15px; margin-bottom: 20px; gap: 12px; }
+        .gua-main { font-size: 32px; font-weight: bold; color: var(--red); }
+        .gua-meta { font-size: 13px; color: #888; margin-top: 4px; }
+        .gua-symbol { font-size: 55px; line-height: 0.8; color: var(--ink); letter-spacing: -5px; text-align: right; }
+
+        .section { margin-bottom: 22px; }
+        .section-label { font-weight: bold; background: var(--ink); color: white; padding: 3px 12px; display: inline-block; margin-bottom: 12px; font-size: 14px; }
+        .main-msg { font-size: 17px; color: #444; border-left: 4px solid var(--gold); padding-left: 15px; margin-bottom: 10px; }
+        .classic-text { font-size: 15px; color: #666; background: #f7f5ef; padding: 12px 14px; border-radius: 4px; margin-top: 8px; }
+        .classic-text em { font-style: normal; color: #999; font-size: 12px; margin-right: 8px; }
+        .yao-msg { background: #fdf2f2; padding: 20px; border-radius: 4px; border: 1px solid #ead6d6; }
+        .yao-poem { font-size: 22px; font-weight: bold; color: var(--red); margin-bottom: 10px; display: block; }
+        .advice-box { font-size: 17px; font-weight: bold; color: #1a5276; margin-top: 25px; text-align: center; border: 2px dashed #1a5276; padding: 15px; background: #f0f7fb; }
+
+        .homescreen-tip {
+            display: none;
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            background: #fff8e8;
+            border: 1px solid #e8d5a3;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #5c4a1f;
+            line-height: 1.7;
+        }
+        .homescreen-tip strong { color: var(--red); }
+        .homescreen-tip .tip-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .homescreen-tip button {
+            width: auto; flex: 1; padding: 8px 10px; font-size: 13px; letter-spacing: 1px;
+        }
+        .btn-tip-ok { background: var(--red); }
+        .btn-tip-hide { background: #8d8570; }
+        body.standalone .homescreen-tip { display: none !important; }
+        @media (max-width: 560px) {
+            .wrapper { padding: 24px 16px; }
+            .input-area { flex-direction: column; }
+            .gua-main { font-size: 24px; }
+            .gua-symbol { font-size: 42px; }
+            h1 { letter-spacing: 4px; font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div id="homescreenTip" class="homescreen-tip">
+        <strong>加入 iPhone 主畫面</strong><br>
+        1. 電腦執行 <strong>start-server.bat</strong>，用 iPhone <strong>Safari</strong> 開網址<br>
+        2. 點底部分享按鈕 <strong>□↑</strong><br>
+        3. 向下滑選 <strong>「加入主畫面」</strong> → 新增（之後可離線使用）
+        <div class="tip-actions">
+            <button type="button" class="btn-tip-ok" onclick="dismissHomescreenTip(false)">知道了</button>
+            <button type="button" class="btn-tip-hide" onclick="dismissHomescreenTip(true)">不再顯示</button>
+        </div>
+    </div>
+    <h1>易經數理占卜</h1>
+    <p class="subtitle">六十四卦 · 三百八十四爻 · 完整解掛</p>
+
+    <div class="mode-section">
+        <div class="mode-title">方法一：先天八卦組合</div>
+        <div class="input-area">
+            <div class="input-box">
+                <label>上卦名稱</label>
+                <select id="m1_up">
+                    <option value="1">乾 (天)</option><option value="2">兌 (澤)</option>
+                    <option value="3">離 (火)</option><option value="4">震 (雷)</option>
+                    <option value="5">巽 (風)</option><option value="6">坎 (水)</option>
+                    <option value="7">艮 (山)</option><option value="8">坤 (地)</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <label>下卦名稱</label>
+                <select id="m1_lo">
+                    <option value="1">乾 (天)</option><option value="2">兌 (澤)</option>
+                    <option value="3">離 (火)</option><option value="4">震 (雷)</option>
+                    <option value="5">巽 (風)</option><option value="6">坎 (水)</option>
+                    <option value="7">艮 (山)</option><option value="8">坤 (地)</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <label>發動爻位</label>
+                <select id="m1_yao">
+                    <option value="1">初爻</option><option value="2">二爻</option>
+                    <option value="3">三爻</option><option value="4">四爻</option>
+                    <option value="5">五爻</option><option value="6">上爻</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-m1" onclick="runByTrigram()">卦象組合斷事</button>
+    </div>
+
+    <div class="mode-section">
+        <div class="mode-title">方法二：數字感應起卦</div>
+        <div class="input-area">
+            <div class="input-box"><label>上卦數</label><input type="number" id="v1" placeholder="如:320"></div>
+            <div class="input-box"><label>下卦數</label><input type="number" id="v2" placeholder="如:220"></div>
+            <div class="input-box"><label>變爻數</label><input type="number" id="v3" placeholder="如:272"></div>
+        </div>
+        <button class="btn-m2" onclick="runByDigital()">數字感應斷事</button>
+    </div>
+
+    <div class="mode-section">
+        <div class="mode-title">方法三：直接輸入已知卦名</div>
+        <div class="input-area">
+            <div class="input-box" style="flex: 2;"><label>輸入卦名</label><input type="text" id="targetGua" placeholder="如：地雷復 / 復 / 既濟"></div>
+            <div class="input-box">
+                <label>指定爻位</label>
+                <select id="m3_yao">
+                    <option value="1">初爻</option><option value="2">二爻</option>
+                    <option value="3">三爻</option><option value="4">四爻</option>
+                    <option value="5">五爻</option><option value="6">上爻</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-m3" onclick="runByName()">卦名直接解卦</button>
+    </div>
+
+    <div id="output">
+        <div class="result-card">
+            <div class="gua-header">
+                <div class="gua-title-group">
+                    <div id="r-sub-name" style="font-size:16px;color:#666;font-weight:bold;"></div>
+                    <div id="r-full-name" class="gua-main"></div>
+                    <div id="r-meta" class="gua-meta"></div>
+                </div>
+                <div id="r-symbol" class="gua-symbol"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-label">本卦訊號</div>
+                <div id="r-desc" class="main-msg"></div>
+                <div id="r-judgment" class="classic-text"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-label">動爻精解</div>
+                <div class="yao-msg">
+                    <span id="r-yao-pos" style="font-size:14px;color:#888;font-weight:bold;display:block;margin-bottom:5px;"></span>
+                    <div id="r-yao-poem" class="yao-poem"></div>
+                    <div id="r-yao-classic" class="classic-text" style="margin-bottom:12px;"></div>
+                    <div id="r-yao-desc" style="font-size:16px; color:#5d4037;"></div>
+                </div>
+            </div>
+
+            <div id="r-advice" class="advice-box"></div>
+        </div>
+    </div>
+</div>
+
+<script src="iching-data.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+}
+
+function isStandalone() {
+    return window.matchMedia("(display-mode: standalone)").matches
+        || window.navigator.standalone === true;
+}
+
+function dismissHomescreenTip(forever) {
+    const tip = document.getElementById("homescreenTip");
+    if (tip) tip.style.display = "none";
+    if (forever) localStorage.setItem("hideHomescreenTip", "1");
+}
+
+(function initHomescreenTip() {
+    if (isStandalone()) {
+        document.body.classList.add("standalone");
+        return;
+    }
+    if (localStorage.getItem("hideHomescreenTip") === "1") return;
+    const tip = document.getElementById("homescreenTip");
+    if (tip) tip.style.display = "block";
+})();
+
+const symbols = ["", "☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
+const triNames = ["", "乾", "兌", "離", "震", "巽", "坎", "艮", "坤"];
+const yaoCh = ["", "初", "二", "三", "四", "五", "上"];
+
+function runByTrigram() {
+    showResult(
+        parseInt(document.getElementById('m1_up').value, 10),
+        parseInt(document.getElementById('m1_lo').value, 10),
+        parseInt(document.getElementById('m1_yao').value, 10)
+    );
+}
+
+function runByDigital() {
+    const v1 = document.getElementById('v1').value;
+    const v2 = document.getElementById('v2').value;
+    const v3 = document.getElementById('v3').value;
+    if (!v1 || !v2 || !v3) return alert("請輸入三組數字");
+    showResult(parseInt(v1, 10) % 8 || 8, parseInt(v2, 10) % 8 || 8, parseInt(v3, 10) % 6 || 6);
+}
+
+function runByName() {
+    const input = document.getElementById('targetGua').value.trim();
+    if (!input) return alert("請輸入卦名");
+
+    let found = null;
+    for (const [key, gua] of Object.entries(ICHING_DATA)) {
+        if (gua.name === input || gua.shortName === input || gua.name.includes(input)) {
+            found = { u: parseInt(key[0], 10), l: parseInt(key[1], 10) };
+            if (gua.name === input || gua.shortName === input) break;
+        }
+    }
+    if (!found) return alert("找不到此卦，請輸入如：地雷復、復、既濟");
+    showResult(found.u, found.l, parseInt(document.getElementById('m3_yao').value, 10));
+}
+
+function buildAdvice(gua, line) {
+    const tip = line.desc.replace(/[。．]$/, "");
+    return `【 最終指引：${gua.shortName}卦 · ${tip}。誠則靈。 】`;
+}
+
+function showResult(up, lo, yao) {
+    const key = "" + up + lo;
+    const gua = ICHING_DATA[key];
+    if (!gua) {
+        alert("資料缺失：" + key);
+        return;
+    }
+    const line = gua.lines[yao];
+    if (!line) {
+        alert("爻位資料缺失");
+        return;
+    }
+
+    document.getElementById('output').style.display = 'block';
+    document.getElementById('r-sub-name').innerText = `上${triNames[up]} 下${triNames[lo]}`;
+    document.getElementById('r-full-name').innerText = gua.name;
+    document.getElementById('r-meta').innerText = `文王序第 ${gua.kingWen} 卦 · ${gua.shortName}`;
+    document.getElementById('r-symbol').innerText = symbols[up] + "\n" + symbols[lo];
+
+    document.getElementById('r-desc').innerText = gua.desc;
+    document.getElementById('r-judgment').innerHTML = `<em>卦辭</em>${gua.judgment}`;
+
+    document.getElementById('r-yao-pos').innerText = `【 第 ${yaoCh[yao]} 爻 】`;
+    document.getElementById('r-yao-poem').innerText = line.poem;
+    document.getElementById('r-yao-classic').innerHTML = `<em>爻辭</em>${line.classic}`;
+    document.getElementById('r-yao-desc').innerText = "白話建議：" + line.desc;
+    document.getElementById('r-advice').innerText = buildAdvice(gua, line);
+
+    document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
