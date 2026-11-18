@@ -49,6 +49,12 @@
         .classic-text em { font-style: normal; color: #999; font-size: 12px; margin-right: 8px; }
         .yao-msg { background: #fdf2f2; padding: 20px; border-radius: 4px; border: 1px solid #ead6d6; }
         .yao-poem { font-size: 22px; font-weight: bold; color: var(--red); margin-bottom: 10px; display: block; }
+        .bian-card { background: #f4f8f4; padding: 20px; border-radius: 4px; border: 1px solid #c8d9c8; }
+        .bian-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #c8d9c8; }
+        .bian-name { font-size: 24px; font-weight: bold; color: #1e5a3a; }
+        .bian-meta { font-size: 13px; color: #888; margin-top: 4px; }
+        .bian-symbol { font-size: 40px; line-height: 0.8; color: var(--ink); letter-spacing: -4px; text-align: right; }
+        .bian-yao { margin-top: 16px; padding-top: 14px; border-top: 1px dashed #c8d9c8; }
         .advice-box { font-size: 17px; font-weight: bold; color: #1a5276; margin-top: 25px; text-align: center; border: 2px dashed #1a5276; padding: 15px; background: #f0f7fb; }
 
         .homescreen-tip {
@@ -84,9 +90,9 @@
 <div class="wrapper">
     <div id="homescreenTip" class="homescreen-tip">
         <strong>加入 iPhone 主畫面</strong><br>
-        1. 電腦執行 <strong>start-server.bat</strong>，用 iPhone <strong>Safari</strong> 開網址<br>
-        2. 點底部分享按鈕 <strong>□↑</strong><br>
-        3. 向下滑選 <strong>「加入主畫面」</strong> → 新增（之後可離線使用）
+        1. 用 Safari 開啟本網站<br>
+        2. 點底部分享 <strong>□↑</strong> → <strong>加入主畫面</strong> → 新增<br>
+        3. 之後可從主畫面開啟；有網路時可更新，離線時靠快取使用
         <div class="tip-actions">
             <button type="button" class="btn-tip-ok" onclick="dismissHomescreenTip(false)">知道了</button>
             <button type="button" class="btn-tip-hide" onclick="dismissHomescreenTip(true)">不再顯示</button>
@@ -181,6 +187,28 @@
                 </div>
             </div>
 
+            <div class="section">
+                <div class="section-label">爻動變卦</div>
+                <div class="bian-card">
+                    <div class="bian-header">
+                        <div>
+                            <div id="r-bian-sub" style="font-size:14px;color:#666;font-weight:bold;"></div>
+                            <div id="r-bian-name" class="bian-name"></div>
+                            <div id="r-bian-meta" class="bian-meta"></div>
+                        </div>
+                        <div id="r-bian-symbol" class="bian-symbol"></div>
+                    </div>
+                    <div id="r-bian-desc" class="main-msg"></div>
+                    <div id="r-bian-judgment" class="classic-text"></div>
+                    <div class="bian-yao">
+                        <span id="r-bian-yao-pos" style="font-size:14px;color:#888;font-weight:bold;display:block;margin-bottom:5px;"></span>
+                        <div id="r-bian-yao-poem" class="yao-poem" style="color:#1e5a3a;"></div>
+                        <div id="r-bian-yao-classic" class="classic-text" style="margin-bottom:12px;"></div>
+                        <div id="r-bian-yao-desc" style="font-size:16px; color:#3e5c45;"></div>
+                    </div>
+                </div>
+            </div>
+
             <div id="r-advice" class="advice-box"></div>
         </div>
     </div>
@@ -219,6 +247,39 @@ const symbols = ["", "☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
 const triNames = ["", "乾", "兌", "離", "震", "巽", "坎", "艮", "坤"];
 const yaoCh = ["", "初", "二", "三", "四", "五", "上"];
 
+// 先天八卦爻象：由下往上，1=陽、0=陰
+const TRIGRAM_LINES = {
+    1: [1, 1, 1], // 乾
+    2: [1, 1, 0], // 兌
+    3: [1, 0, 1], // 離
+    4: [1, 0, 0], // 震
+    5: [0, 1, 1], // 巽
+    6: [0, 1, 0], // 坎
+    7: [0, 0, 1], // 艮
+    8: [0, 0, 0]  // 坤
+};
+
+function linesToTrigram(lines) {
+    const key = lines.join("");
+    const map = {
+        "111": 1, "110": 2, "101": 3, "100": 4,
+        "011": 5, "010": 6, "001": 7, "000": 8
+    };
+    return map[key];
+}
+
+/** 本卦某爻動後，推算變卦的上卦、下卦編號 */
+function getChangedGua(up, lo, yao) {
+    const upper = TRIGRAM_LINES[up].slice();
+    const lower = TRIGRAM_LINES[lo].slice();
+    if (yao >= 1 && yao <= 3) {
+        lower[yao - 1] = lower[yao - 1] ^ 1;
+    } else if (yao >= 4 && yao <= 6) {
+        upper[yao - 4] = upper[yao - 4] ^ 1;
+    }
+    return { up: linesToTrigram(upper), lo: linesToTrigram(lower) };
+}
+
 function runByTrigram() {
     showResult(
         parseInt(document.getElementById('m1_up').value, 10),
@@ -250,9 +311,10 @@ function runByName() {
     showResult(found.u, found.l, parseInt(document.getElementById('m3_yao').value, 10));
 }
 
-function buildAdvice(gua, line) {
+function buildAdvice(gua, line, bianGua, bianLine) {
     const tip = line.desc.replace(/[。．]$/, "");
-    return `【 最終指引：${gua.shortName}卦 · ${tip}。誠則靈。 】`;
+    const bianTip = bianLine.desc.replace(/[。．]$/, "");
+    return `【 最終指引：本卦${gua.shortName} · ${tip}；變卦${bianGua.shortName} · ${bianTip}。誠則靈。 】`;
 }
 
 function showResult(up, lo, yao) {
@@ -265,6 +327,19 @@ function showResult(up, lo, yao) {
     const line = gua.lines[yao];
     if (!line) {
         alert("爻位資料缺失");
+        return;
+    }
+
+    const changed = getChangedGua(up, lo, yao);
+    const bianKey = "" + changed.up + changed.lo;
+    const bianGua = ICHING_DATA[bianKey];
+    if (!bianGua) {
+        alert("變卦資料缺失：" + bianKey);
+        return;
+    }
+    const bianLine = bianGua.lines[yao];
+    if (!bianLine) {
+        alert("變卦爻位資料缺失");
         return;
     }
 
@@ -281,7 +356,20 @@ function showResult(up, lo, yao) {
     document.getElementById('r-yao-poem').innerText = line.poem;
     document.getElementById('r-yao-classic').innerHTML = `<em>爻辭</em>${line.classic}`;
     document.getElementById('r-yao-desc').innerText = "白話建議：" + line.desc;
-    document.getElementById('r-advice').innerText = buildAdvice(gua, line);
+
+    document.getElementById('r-bian-sub').innerText =
+        `${gua.shortName}卦${yaoCh[yao]}爻動 → 上${triNames[changed.up]} 下${triNames[changed.lo]}`;
+    document.getElementById('r-bian-name').innerText = bianGua.name;
+    document.getElementById('r-bian-meta').innerText = `文王序第 ${bianGua.kingWen} 卦 · ${bianGua.shortName}`;
+    document.getElementById('r-bian-symbol').innerText = symbols[changed.up] + "\n" + symbols[changed.lo];
+    document.getElementById('r-bian-desc').innerText = bianGua.desc;
+    document.getElementById('r-bian-judgment').innerHTML = `<em>卦辭</em>${bianGua.judgment}`;
+    document.getElementById('r-bian-yao-pos').innerText = `【 變卦 · 第 ${yaoCh[yao]} 爻 】`;
+    document.getElementById('r-bian-yao-poem').innerText = bianLine.poem;
+    document.getElementById('r-bian-yao-classic').innerHTML = `<em>爻辭</em>${bianLine.classic}`;
+    document.getElementById('r-bian-yao-desc').innerText = "白話建議：" + bianLine.desc;
+
+    document.getElementById('r-advice').innerText = buildAdvice(gua, line, bianGua, bianLine);
 
     document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
 }
